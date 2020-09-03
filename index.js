@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const Sentry = require('@sentry/node')
 
 const {
@@ -40,7 +41,11 @@ app.set('etag', false)
 
 app.post('/addresses', asyncHandler(async (req, res, next) => {
   let { addresses } = req.body
-  addresses = [...new Set(addresses)]
+  if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
+    res.status(400).json({ error: 'Invalid "addresses" field' })
+  }
+
+  addresses = _.uniq(addresses)
 
   const response = await Bluebird.map(addresses, address => {
     return electrs.get(`/address/${address}`).then(response => response.data)
@@ -51,7 +56,11 @@ app.post('/addresses', asyncHandler(async (req, res, next) => {
 
 app.post('/addresses/utxo', asyncHandler(async (req, res, next) => {
   let { addresses } = req.body
-  addresses = [...new Set(addresses)]
+  if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
+    res.status(400).json({ error: 'Invalid "addresses" field' })
+  }
+
+  addresses = _.uniq(addresses)
 
   const response = await Bluebird.map(addresses, address => {
     return electrs.get(`/address/${address}/utxo`).then(response => ({
@@ -62,6 +71,12 @@ app.post('/addresses/utxo', asyncHandler(async (req, res, next) => {
 
   res.json(response)
 }))
+
+app.all('/*', function (req, res) {
+  res.status(404).json({
+    error: '404'
+  })
+})
 
 app.use((err, req, res, next) => {
   const status = err.statusCode || 500

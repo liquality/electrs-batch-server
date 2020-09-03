@@ -21,7 +21,8 @@
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
     "helmet": "^4.1.0",
-    "http-errors": "^1.8.0"
+    "http-errors": "^1.8.0",
+    "lodash": "^4.17.20"
   },
   "devDependencies": {
     "standard": "^14.3.4"
