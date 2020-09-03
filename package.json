@@ -1,6 +1,6 @@
 {
   "name": "electrs-batch-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Electrs middleware server for batch API calls",
   "main": "index.js",
   "bin": {
