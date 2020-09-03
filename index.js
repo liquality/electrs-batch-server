@@ -16,7 +16,6 @@ const Bluebird = require('bluebird')
 const axios = require('axios')
 const express = require('express')
 const helmet = require('helmet')
-const cors = require('cors')
 const compression = require('compression')
 const bodyParser = require('body-parser')
 const asyncHandler = require('express-async-handler')
@@ -35,7 +34,6 @@ if (NODE_ENV === 'production') {
 }
 
 app.use(helmet())
-app.use(cors())
 app.use(compression())
 app.use(bodyParser.json({ limit: '5mb' }))
 app.set('etag', false)
