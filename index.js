@@ -42,7 +42,7 @@ app.set('etag', false)
 app.post('/addresses', asyncHandler(async (req, res, next) => {
   let { addresses } = req.body
   if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
-    res.status(400).json({ error: 'Invalid "addresses" field' })
+    return res.status(400).json({ error: 'Invalid "addresses" field' })
   }
 
   addresses = _.uniq(addresses)
@@ -57,7 +57,7 @@ app.post('/addresses', asyncHandler(async (req, res, next) => {
 app.post('/addresses/utxo', asyncHandler(async (req, res, next) => {
   let { addresses } = req.body
   if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
-    res.status(400).json({ error: 'Invalid "addresses" field' })
+    return res.status(400).json({ error: 'Invalid "addresses" field' })
   }
 
   addresses = _.uniq(addresses)
