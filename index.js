@@ -1,18 +1,4 @@
 const _ = require('lodash')
-const Sentry = require('@sentry/node')
-
-const {
-  PORT,
-  NODE_ENV,
-  ELECTRS_URL,
-  CONCURRENCY,
-  SENTRY_DSN
-} = process.env
-
-if (NODE_ENV === 'production' && SENTRY_DSN) {
-  Sentry.init({ dsn: SENTRY_DSN })
-}
-
 const Bluebird = require('bluebird')
 const axios = require('axios')
 const express = require('express')
@@ -20,12 +6,23 @@ const helmet = require('helmet')
 const compression = require('compression')
 const bodyParser = require('body-parser')
 const asyncHandler = require('express-async-handler')
-
+const Sentry = require('@sentry/node')
 const httpError = require('./http-error')
+const systemDefaults = require('./systemDefaults')
 
-if (!PORT) throw new Error('Invalid PORT')
+const {
+  NODE_ENV,
+  ELECTRS_URL,
+  SENTRY_DSN
+} = process.env
+const PORT = process.env.PORT || systemDefaults.port
+const CONCURRENCY = process.env.CONCURRENCY || systemDefaults.concurrency
+
+if (NODE_ENV === 'production' && SENTRY_DSN) {
+  Sentry.init({ dsn: SENTRY_DSN })
+}
+
 if (!ELECTRS_URL) throw new Error('Invalid ELECTRS_URL')
-if (!CONCURRENCY) throw new Error('Invalid CONCURRENCY')
 
 const app = express()
 const electrs = axios.create({ baseURL: ELECTRS_URL })
@@ -106,4 +103,4 @@ app.use((err, req, res, next) => {
   return httpError(req, res, status, message)
 })
 
-app.listen(PORT, () => console.log(`API is running on ${PORT}`))
+app.listen(PORT, () => console.log(`Electrs Batch API is running on ${PORT}`))

@@ -2,16 +2,20 @@
   "name": "electrs-batch-server",
   "version": "1.0.4",
   "description": "Electrs middleware server for batch API calls",
+  "author": "Liquality <info@liquality.io>",
+  "license": "MIT",
   "main": "index.js",
   "bin": {
     "electrs-batch-server": "./bin/electrs-batch-server"
   },
   "scripts": {
     "test": "standard",
-    "start": "node index.js"
+    "start": "node index.js",
+    "docker:build-local": "docker build -t electrs-batch-api . --no-cache",
+    "docker:run-local": "docker run --rm --name electrs-batch-api -p 9090:9090 --env-file .env.docker.local -d -it electrs-batch-api:latest",
+    "docker:stop-local": "docker stop electrs-batch-api",
+    "docker:log-local": "docker container logs -t electrs-batch-api"
   },
-  "author": "Liquality <info@liquality.io>",
-  "license": "MIT",
   "dependencies": {
     "@sentry/node": "^5.22.3",
     "axios": "^0.20.0",
