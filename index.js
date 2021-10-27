@@ -36,20 +36,32 @@ app.use(compression())
 app.use(bodyParser.json({ limit: '5mb' }))
 app.set('etag', false)
 
+// async function performStatusCheck () {
+//   console.log(`[API] status check (${ELECTRS_URL}/blocks/tip/height)`)
+//   try {
+//     const payload = await electrs.get('/blocks/tip/height222')
+//     console.log('[DEVING] payload:', payload)
+//     return payload.data
+//   } catch (error) {
+//     console.error(`[API] status check failed ${error.status} =>`, error)
+//     throw error
+//   }
+// }
+
 // GET /status
 // A status endpoint for monitoring the batch API
 //   (on success) Returns status 200 and the latest block
 //   (on error)   Returns the underlying http status as an error
-app.get('/status', asyncHandler(async (req, res, next) => {
-  console.log(`[API] status check (${ELECTRS_URL}/blocks/tip/height)`)
-  const payload = await electrs.get('/blocks/tip/height')
-  const data = (payload && payload.data) ? payload.data : null
-  if (!data) return res.status(500).json({ error: 'Electrs endpoint did not respond as expected' })
-  console.log(`[API] electrs response: ${data}`)
-
-  res.set('Access-Control-Allow-Origin', '*')
-	res.json(data)
-}))
+app.get('/status', async (req, res, next) => {
+  // console.log(`[API] status check (${ELECTRS_URL}/blocks/tip/height)`)
+  // const payload = await electrs.get('/blocks/tip/height')
+  // const data = (payload && payload.data) ? payload.data : null
+  // if (!data) return res.status(500).json({ error: 'Electrs endpoint did not respond as expected' })
+  // console.log(`[API] electrs response: ${data}`)
+  // res.set('Access-Control-Allow-Origin', '*')
+  // res.json(data)
+  return res.status(200).json('ok')
+})
 
 app.post('/addresses', asyncHandler(async (req, res, next) => {
   let { addresses } = req.body
