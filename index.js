@@ -36,29 +36,14 @@ app.use(compression())
 app.use(bodyParser.json({ limit: '5mb' }))
 app.set('etag', false)
 
-async function performStatusCheck () {
-  console.log(`[API] status check (${ELECTRS_URL}/blocks/tip/height)`)
-  try {
-    const payload = await electrs.get('/blocks/tip/height222')
-    console.log('[DEVING] payload:', payload)
-    return payload.data
-  } catch (error) {
-    console.error(`[API] status check failed ${error.status} =>`, error)
-    throw error
-  }
-}
-
 // GET /status
 // A status endpoint for monitoring the batch API
-//   (on success) Returns status 200 and the latest block
+//   (on success) Returns status 200 and the latest indexed block
 //   (on error)   Returns the underlying error message with error status
 app.get('/status', async (req, res, next) => {
-  console.log(`[API] status check (${ELECTRS_URL}/blocks/tip/height)`)
-  // res.set('Access-Control-Allow-Origin', '*')
   try {
     const payload = await electrs.get('/blocks/tip/height')
     const data = (payload && payload.data) ? payload.data : 'no data'
-    console.log(`[API] electrs response: ${data}`)
     return res.status(200).json(data)
   } catch (err) {
     const message = (err.response && err.response.data) ? err.response.data : err.message
@@ -117,13 +102,11 @@ app.post('/addresses/transactions', asyncHandler(async (req, res, next) => {
   res.json(response)
 }))
 
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', '*')
-//   res.header('Access-Control-Allow-Methods', 'HEAD, GET, POST, PUT, DELETE, OPTIONS')
-//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-Auth-Token, Content-Type, Accept, Authorization')
-//   res.header('Access-Control-Allow-Credentials', true)
-//   next()
-// })
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'HEAD, GET, POST, OPTIONS')
+  next()
+})
 
 app.all('/*', function (req, res) {
   res.setHeader('Content-Type', 'text/html')

@@ -14,8 +14,15 @@
     "docker:build-local": "docker build -t electrs-batch-api . --no-cache",
     "docker:run-local": "docker run --rm --name electrs-batch-api -p 9090:9090 --env-file .env.docker.local -d -it electrs-batch-api:latest",
     "docker:stop-local": "docker stop electrs-batch-api",
-    "docker:log-local": "docker container logs -t electrs-batch-api"
+    "docker:log-local": "docker container logs -t electrs-batch-api",
+    "lint": "standard --verbose",
+    "flint": "npm run lint --fix",
+    "precommit-message-lint": "printf '\nPre-commit checks (linting)...\n' && exit 0"
   },
+  "pre-commit": [
+    "precommit-message-lint",
+    "lint"
+  ],
   "dependencies": {
     "@sentry/node": "^5.22.3",
     "axios": "^0.20.0",
@@ -29,6 +36,7 @@
     "lodash": "^4.17.20"
   },
   "devDependencies": {
+    "pre-commit": "1.2.2",
     "standard": "^14.3.4"
   }
 }
