@@ -36,6 +36,18 @@ app.use(compression())
 app.use(bodyParser.json({ limit: '5mb' }))
 app.set('etag', false)
 
+// GET /status
+// A status endpoint for monitoring the batch API
+//   (on success) Returns status 200 and the latest block
+//   (on error)   Returns the underlying http status as an error
+app.get('/status', asyncHandler(async (req, res, next) => {
+  const payload = await electrs.get('/blocks/tip/height')
+  const data = (payload && payload.data) ? payload.data : null
+  if (!data) return res.status(500).json({ error: 'Electrs endpoint did not respond as expected' })
+
+	res.json(data)
+}))
+
 app.post('/addresses', asyncHandler(async (req, res, next) => {
   let { addresses } = req.body
   if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
