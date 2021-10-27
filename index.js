@@ -113,10 +113,20 @@ app.post('/addresses/transactions', asyncHandler(async (req, res, next) => {
   res.json(response)
 }))
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'HEAD, GET, POST, PUT, DELETE, OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-Auth-Token, Content-Type, Accept, Authorization')
+  res.header('Access-Control-Allow-Credentials', true)
+  next()
+})
+
 app.all('/*', function (req, res) {
-  res.status(404).json({
-    error: '404'
-  })
+  res.setHeader('Content-Type', 'text/html')
+  res.send('Electrs Batch API is running')
+  // res.status(404).json({
+  //   error: '404'
+  // })
 })
 
 app.use((err, req, res, next) => {
