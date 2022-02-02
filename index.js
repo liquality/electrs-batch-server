@@ -56,7 +56,7 @@ app.get('/status', async (req, res, next) => {
   try {
     const payload = await electrs.get('/blocks/tip/height')
     const data = payload && payload.data ? payload.data : 'no data'
-    throw new Error('status error')
+    throw new Error('error')
     transaction.finish()
     return res.status(200).json(data)
   } catch (err) {
