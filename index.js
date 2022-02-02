@@ -76,6 +76,7 @@ app.post(
     })
     let { addresses } = req.body
     if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
+      transaction.finish()
       return res.status(400).json({ error: 'Invalid "addresses" field' })
     }
 
