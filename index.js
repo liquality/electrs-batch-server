@@ -136,10 +136,6 @@ app.use((req, res, next) => {
   next()
 })
 
-app.get('/debug-sentry', function mainHandler(req, res) {
-  throw new Error('My first Sentry error!')
-})
-
 app.all('/*', function (req, res) {
   res.setHeader('Content-Type', 'text/html')
   res.send('Electrs Batch API is running')
