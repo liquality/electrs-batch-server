@@ -30,7 +30,8 @@ if (NODE_ENV === 'production' && SENTRY_DSN) {
     // Set tracesSampleRate to 1.0 to capture 100%
     // of transactions for performance monitoring.
     // We recommend adjusting this value in production
-    tracesSampleRate: 1.0
+    tracesSampleRate: 1.0,
+    environment: NODE_ENV
   })
 }
 
@@ -48,20 +49,31 @@ app.set('etag', false)
 //   (on success) Returns status 200 and the latest indexed block
 //   (on error)   Returns the underlying error message with error status
 app.get('/status', async (req, res, next) => {
+  const transaction = Sentry.startTransaction({ op: 'status', name: 'Status' })
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction)
+  })
   try {
     const payload = await electrs.get('/blocks/tip/height')
     const data = payload && payload.data ? payload.data : 'no data'
+    transaction.finish()
     return res.status(200).json(data)
   } catch (err) {
     const message = err.response && err.response.data ? err.response.data : err.message
     const status = err.status || 500
+    transaction.finish()
     return res.status(status).json(`${status}: ${message}`)
   }
 })
 
 app.post(
   '/addresses',
+
   asyncHandler(async (req, res, next) => {
+    const transaction = Sentry.startTransaction({ op: 'addresses', name: 'Addresses' })
+    Sentry.configureScope((scope) => {
+      scope.setSpan(transaction)
+    })
     let { addresses } = req.body
     if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
       return res.status(400).json({ error: 'Invalid "addresses" field' })
@@ -77,6 +89,7 @@ app.post(
       { concurrency: Number(CONCURRENCY) }
     )
 
+    transaction.finish()
     res.json(response)
   })
 )
@@ -84,8 +97,14 @@ app.post(
 app.post(
   '/addresses/utxo',
   asyncHandler(async (req, res, next) => {
+    const transaction = Sentry.startTransaction({ op: 'addresses/utxo', name: 'Addresses utxo' })
+    Sentry.configureScope((scope) => {
+      scope.setSpan(transaction)
+    })
+
     let { addresses } = req.body
     if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
+      transaction.finish()
       return res.status(400).json({ error: 'Invalid "addresses" field' })
     }
 
@@ -101,7 +120,7 @@ app.post(
       },
       { concurrency: Number(CONCURRENCY) }
     )
-
+    transaction.finish()
     res.json(response)
   })
 )
@@ -109,8 +128,14 @@ app.post(
 app.post(
   '/addresses/transactions',
   asyncHandler(async (req, res, next) => {
+    const transaction = Sentry.startTransaction({ op: '/addresses/transactions', name: 'Address Transaction' })
+    Sentry.configureScope((scope) => {
+      scope.setSpan(transaction)
+    })
+
     let { addresses } = req.body
     if (!addresses || !_.isArray(addresses) || addresses.length === 0) {
+      transaction.finish()
       return res.status(400).json({ error: 'Invalid "addresses" field' })
     }
 
@@ -126,6 +151,8 @@ app.post(
       },
       { concurrency: Number(CONCURRENCY) }
     )
+
+    transaction.finish()
     res.json(response)
   })
 )
@@ -137,6 +164,11 @@ app.use((req, res, next) => {
 })
 
 app.all('/*', function (req, res) {
+  const transaction = Sentry.startTransaction({ op: 'Others', name: 'All Other Transaction' })
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction)
+  })
+  transaction.finish()
   res.setHeader('Content-Type', 'text/html')
   res.send('Electrs Batch API is running')
   // res.status(404).json({
