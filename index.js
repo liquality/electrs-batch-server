@@ -11,8 +11,6 @@ const Tracing = require('@sentry/tracing')
 const httpError = require('./http-error')
 const systemDefaults = require('./systemDefaults')
 const Redis = require('ioredis')
-const { response } = require('express')
-const { convertObjectToArray } = require('ioredis/built/utils')
 
 const { NODE_ENV, ELECTRS_URL, SENTRY_DSN, REDIS_URL } = process.env
 const PORT = process.env.PORT || systemDefaults.port
@@ -75,10 +73,10 @@ app.post(
     const payload = await electrs.get('/blocks/tip/height')
     const latestBlock = payload.data
 
-    console.log('Latest block ',latestBlock)
+    console.log('Latest block ', latestBlock)
     addresses = _.uniq(addresses)
 
-console.log('Reading from cache')
+    console.log('Reading from cache')
     let response = await Bluebird.map(
       addresses,
       (address) => {
@@ -89,8 +87,8 @@ console.log('Reading from cache')
       },
       { concurrency: Number(CONCURRENCY) }
     )
-    
-    if (!response || (response.length>0 && response[0]==null)) {
+
+    if (!response || (response.length > 0 && response[0] == null)) {
       console.log('Cache is empty or their is a new block')
       console.log('Reading from server')
       response = await Bluebird.map(
@@ -98,14 +96,13 @@ console.log('Reading from cache')
         (address) => {
           return electrs.get(`/address/${address}`).then(async (response) => {
             const latestBlockPrefix = latestBlock + ':' + `/address/${address}`
-            await redisClient.set(latestBlockPrefix, JSON.stringify(response.data),'ex',600)
+            await redisClient.set(latestBlockPrefix, JSON.stringify(response.data), 'ex', 600)
             return response.data
           })
         },
         { concurrency: Number(CONCURRENCY) }
       )
     }
-
 
     res.json(response)
   })
