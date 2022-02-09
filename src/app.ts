@@ -5,10 +5,7 @@ dotenv.config({path: `${process.cwd()}/.env.${process.env.NODE_ENV}`})
 
 const PORT = process.env.PORT || 3000
 
-const app = new BatchServer(
-  PORT,
-  []
-)
+const app = new BatchServer(PORT, [])
 
 const server = app.start()
 

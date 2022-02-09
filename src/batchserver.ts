@@ -5,7 +5,7 @@ import compression from 'compression'
 import Sentry from '@sentry/node'
 import {RouteConifg} from './baseroute'
 import {Electrs} from './electrs'
-import bodyParser = require('body-parser');
+import bodyParser = require('body-parser')
 import httpError = require('../http-error.js')
 
 class App {
@@ -15,7 +15,6 @@ class App {
   constructor(private port: string | number, private middlewares: any[]) {
     this.app = express()
     this.port = port
-
 
     console.log('init config')
     // this.initMiddlewares(middlewares)
@@ -33,16 +32,15 @@ class App {
       return httpError(req, res, status, message)
     })
 
-
-    this.app.all('/*',)
+    this.app.all('/*')
   }
 
   private initRoutes() {
-    this.routes.push(new Electrs(this.app));
+    this.routes.push(new Electrs(this.app))
   }
 
   private initConifg() {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === 'production') {
       this.app.set('trust proxy', 1)
       this.initSentry()
     }
@@ -53,16 +51,13 @@ class App {
     this.app.use(cors())
     this.app.use(compression())
     this.app.set('etag', false)
-
   }
-
 
   private initMiddlewares(middlewaresArr: any[]) {
     middlewaresArr.forEach((middleware) => {
       this.app.use(middleware)
     })
   }
-
 
   private initSentry() {
     const sentryDSN: string = process.env.SENTRY_DSN!
@@ -71,16 +66,13 @@ class App {
 
     Sentry.init({
       dsn: sentryDSN,
-      integrations: [
-        new Sentry.Integrations.Http({tracing: true}),
-      ],
+      integrations: [new Sentry.Integrations.Http({tracing: true})],
       tracesSampleRate: 1.0
     })
 
     this.app.use(Sentry.Handlers.requestHandler())
     this.app.use(Sentry.Handlers.tracingHandler())
     this.app.use(Sentry.Handlers.errorHandler())
-
   }
 
   public start() {

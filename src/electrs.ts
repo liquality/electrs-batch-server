@@ -1,8 +1,8 @@
-import {RouteConifg} from './baseroute';
-import express from 'express';
-import {Axios} from 'axios';
+import {RouteConifg} from './baseroute'
+import express from 'express'
+import {Axios} from 'axios'
 import Bluebird from 'bluebird'
-import _ from "lodash"
+import _ from 'lodash'
 import Redis = require('ioredis')
 
 export class Electrs extends RouteConifg {
@@ -11,7 +11,7 @@ export class Electrs extends RouteConifg {
   public CONCURRENCY = 10
 
   constructor(app: express.Application) {
-    super(app, 'Electrs');
+    super(app, 'Electrs')
 
     const ELECTRS_URL: string = process.env.ELECTRS_URL!
     if (!ELECTRS_URL) {
@@ -23,7 +23,6 @@ export class Electrs extends RouteConifg {
       throw new Error('REDIS_URL is not found in ENV')
     }
 
-
     const concurrency = process.env.CONCURRENCY!
     if (concurrency) this.CONCURRENCY = Number(concurrency)
 
@@ -33,11 +32,11 @@ export class Electrs extends RouteConifg {
   }
 
   configureRoutes() {
-    console.log("configure routes")
+    console.log('configure routes')
     this.app.route('/status').get(this.getStatus.bind(this))
     this.app.route('/addresses').post(this.getAddresses.bind(this))
     this.app.route('/addresses/transactions').post(this.getTransactions.bind(this))
-    return this.app;
+    return this.app
   }
 
   async getStatus(req: express.Request, res: express.Response) {
@@ -69,7 +68,7 @@ export class Electrs extends RouteConifg {
     }
 
     const latestBlockData = await this.electrs.get('/blocks/tip/height')
-    const latestBlock: string = (latestBlockData && latestBlockData.data) ? latestBlockData.data : ''
+    const latestBlock: string = latestBlockData && latestBlockData.data ? latestBlockData.data : ''
 
     addresses = _.uniq(addresses)
 
@@ -80,10 +79,8 @@ export class Electrs extends RouteConifg {
     }
 
     res.json(JSON.parse(response))
-
   }
   async populateRedis(latestBlock: string, data: any[], callType: string) {
-
     console.log('Populating redis cache')
     data.forEach(async (responseData) => {
       let redisKey = ''
@@ -92,22 +89,20 @@ export class Electrs extends RouteConifg {
       switch (callType) {
         case 'addresses':
           redisKey = latestBlock + `:/address/${address}`
-          break;
+          break
         case 'utxo':
           redisKey = latestBlock + `:/address/${address}/utxo`
-          break;
+          break
         case 'transactions':
           redisKey = latestBlock + `:/address/${address}/txs/chain`
-          break;
+          break
       }
 
-      const response = await this.redisClient.set(redisKey, responseData);
+      const response = await this.redisClient.set(redisKey, responseData)
     })
   }
 
   async callRedis(latestBlock: string, addresses: string[], callType: string) {
-
-
     console.log('Getting data from redis cache')
     const response: any = await Bluebird.map(
       addresses,
@@ -117,16 +112,16 @@ export class Electrs extends RouteConifg {
         switch (callType) {
           case 'addresses':
             redisKey = latestBlock + `:/address/${address}`
-            break;
+            break
           case 'utxo':
             redisKey = latestBlock + `:/address/${address}/utxo`
-            break;
+            break
           case 'transactions':
             redisKey = latestBlock + `:/address/${address}/txs/chain`
-            break;
+            break
         }
-        const response = await this.redisClient.get(redisKey);
-        return response ? response : null;
+        const response = await this.redisClient.get(redisKey)
+        return response ? response : null
       },
       {concurrency: Number(this.CONCURRENCY)}
     )
@@ -135,33 +130,29 @@ export class Electrs extends RouteConifg {
   }
 
   async callElectrs(addresses: string[], callType: string) {
-
     console.log('Getting data from electrs server')
     const response: any = await Bluebird.map(
       addresses,
       async (address) => {
-
         let electrsPath = ''
         switch (callType) {
           case 'addresses':
             electrsPath = `/address/${address}`
-            break;
+            break
           case 'utxo':
             electrsPath = `/address/${address}/utxo`
-            break;
+            break
           case 'transactions':
             electrsPath = `/address/${address}/txs/chain`
-            break;
+            break
         }
 
-        const response = await this.electrs.get(electrsPath);
-        return response.data;
+        const response = await this.electrs.get(electrsPath)
+        return response.data
       },
       {concurrency: Number(this.CONCURRENCY)}
     )
 
     return response
   }
-
-
 }
