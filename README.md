@@ -12,11 +12,13 @@
 ### Run your own server
 
 ```bash
-export PORT=5000
+export PORT=3000
 export ELECTRS_URL=http://localhost:3000
 export CONCURRENCY=10
+export REDIS_URL="redis://localhost:6379"
 
-npm start
+tsc
+npm run build:run
 ```
 
 
