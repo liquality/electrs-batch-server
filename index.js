@@ -36,7 +36,7 @@ if (NODE_ENV === 'production' && SENTRY_DSN) {
 
 if (!ELECTRS_URL) throw new Error('Invalid ELECTRS_URL')
 
-const electrs = axios.create({ baseURL: ELECTRS_URL })
+const electrs = axios.create({ baseURL: ELECTRS_URL, timeout: 30000 })
 
 app.use(helmet())
 app.use(compression())
