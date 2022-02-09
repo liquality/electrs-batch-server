@@ -2,22 +2,35 @@
   "name": "electrs-batch-server",
   "version": "1.0.4",
   "description": "Electrs middleware server for batch API calls",
+  "author": "Liquality <info@liquality.io>",
+  "license": "MIT",
   "main": "index.js",
   "bin": {
     "electrs-batch-server": "./bin/electrs-batch-server"
   },
   "scripts": {
     "test": "standard",
-    "start": "node index.js"
+    "start": "node index.js",
+    "docker:build-local": "docker build -t electrs-batch-api . --no-cache",
+    "docker:run-local": "docker run --rm --name electrs-batch-api -p 9090:9090 --env-file .env.docker.local -d -it electrs-batch-api:latest",
+    "docker:stop-local": "docker stop electrs-batch-api",
+    "docker:log-local": "docker container logs -t electrs-batch-api",
+    "lint": "standard --verbose",
+    "flint": "npm run lint --fix",
+    "precommit-message-lint": "printf '\nPre-commit checks (linting)...\n' && exit 0"
   },
-  "author": "Liquality <info@liquality.io>",
-  "license": "MIT",
+  "pre-commit": [
+    "precommit-message-lint",
+    "lint"
+  ],
   "dependencies": {
     "@sentry/node": "^5.22.3",
+    "@sentry/tracing": "^6.17.3",
     "axios": "^0.20.0",
     "bluebird": "^3.7.2",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
     "helmet": "^4.1.0",
@@ -25,6 +38,7 @@
     "lodash": "^4.17.20"
   },
   "devDependencies": {
+    "pre-commit": "1.2.2",
     "standard": "^14.3.4"
   }
 }
