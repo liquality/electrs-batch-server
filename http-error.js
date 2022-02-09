@@ -5,6 +5,7 @@ module.exports = (req, res, status, message) => {
   const id = res.sentry
   message = err.message
 
+  console.log('inside error handler')
   res.status(status)
 
   if (req.acceptJson) {
