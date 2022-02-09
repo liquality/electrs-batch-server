@@ -65,7 +65,7 @@ class App {
 
 
   private initSentry() {
-    var sentryDSN: string = process.env.SENTRY_DSN!
+    const sentryDSN: string = process.env.SENTRY_DSN!
 
     if (!sentryDSN) throw new Error('Invalid Sentry DSN URL')
 

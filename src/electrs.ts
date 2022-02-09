@@ -8,7 +8,7 @@ import Redis = require('ioredis')
 export class Electrs extends RouteConifg {
   public electrs: Axios
   public redisClient: any
-  public CONCURRENCY: number = 10
+  public CONCURRENCY = 10
 
   constructor(app: express.Application) {
     super(app, 'Electrs');
@@ -86,8 +86,8 @@ export class Electrs extends RouteConifg {
 
     console.log('Populating redis cache')
     data.forEach(async (responseData) => {
-      let redisKey: string = ''
-      let address: string = JSON.parse(responseData).address
+      let redisKey = ''
+      const address: string = JSON.parse(responseData).address
 
       switch (callType) {
         case 'addresses':
@@ -112,8 +112,8 @@ export class Electrs extends RouteConifg {
     const response: any = await Bluebird.map(
       addresses,
       async (address) => {
-        let redisKey: string = ''
-        let electrsPath: string = ''
+        let redisKey = ''
+        const electrsPath = ''
         switch (callType) {
           case 'addresses':
             redisKey = latestBlock + `:/address/${address}`
@@ -141,7 +141,7 @@ export class Electrs extends RouteConifg {
       addresses,
       async (address) => {
 
-        let electrsPath: string = ''
+        let electrsPath = ''
         switch (callType) {
           case 'addresses':
             electrsPath = `/address/${address}`

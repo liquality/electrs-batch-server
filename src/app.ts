@@ -1,6 +1,5 @@
 import dotenv from 'dotenv'
 import BatchServer from './batchserver'
-import express from 'express'
 
 dotenv.config({path: `${process.cwd()}/.env.${process.env.NODE_ENV}`})
 
