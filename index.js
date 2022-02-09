@@ -10,8 +10,11 @@ const Sentry = require('@sentry/node')
 const Tracing = require('@sentry/tracing')
 const httpError = require('./http-error')
 const systemDefaults = require('./systemDefaults')
+const Redis = require('ioredis')
+const { response } = require('express')
+const { convertObjectToArray } = require('ioredis/built/utils')
 
-const { NODE_ENV, ELECTRS_URL, SENTRY_DSN } = process.env
+const { NODE_ENV, ELECTRS_URL, SENTRY_DSN, REDIS_URL } = process.env
 const PORT = process.env.PORT || systemDefaults.port
 const CONCURRENCY = process.env.CONCURRENCY || systemDefaults.concurrency
 
@@ -35,8 +38,10 @@ if (NODE_ENV === 'production' && SENTRY_DSN) {
 }
 
 if (!ELECTRS_URL) throw new Error('Invalid ELECTRS_URL')
-
 const electrs = axios.create({ baseURL: ELECTRS_URL })
+
+if (!REDIS_URL) throw new Error('Invalid REDIS_URL')
+const redisClient = new Redis(REDIS_URL)
 
 app.use(helmet())
 app.use(compression())
@@ -67,15 +72,40 @@ app.post(
       return res.status(400).json({ error: 'Invalid "addresses" field' })
     }
 
+    const payload = await electrs.get('/blocks/tip/height')
+    const latestBlock = payload.data
+
+    console.log('Latest block ',latestBlock)
     addresses = _.uniq(addresses)
 
-    const response = await Bluebird.map(
+console.log('Reading from cache')
+    let response = await Bluebird.map(
       addresses,
       (address) => {
-        return electrs.get(`/address/${address}`).then((response) => response.data)
+        const latestBlockPrefix = latestBlock + ':' + `/address/${address}`
+        return redisClient.get(latestBlockPrefix).then(async (response) => {
+          return JSON.parse(response)
+        })
       },
       { concurrency: Number(CONCURRENCY) }
     )
+    
+    if (!response || (response.length>0 && response[0]==null)) {
+      console.log('Cache is empty or their is a new block')
+      console.log('Reading from server')
+      response = await Bluebird.map(
+        addresses,
+        (address) => {
+          return electrs.get(`/address/${address}`).then(async (response) => {
+            const latestBlockPrefix = latestBlock + ':' + `/address/${address}`
+            await redisClient.set(latestBlockPrefix, JSON.stringify(response.data),'ex',600)
+            return response.data
+          })
+        },
+        { concurrency: Number(CONCURRENCY) }
+      )
+    }
+
 
     res.json(response)
   })
