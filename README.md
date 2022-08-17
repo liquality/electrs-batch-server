@@ -19,6 +19,20 @@ export CONCURRENCY=10
 npm start
 ```
 
+### 🐳 Docker
+
+Build the image
+
+```sh
+docker buildx build --tag electrs-batch-server --load .
+```
+
+Run the container
+
+```sh
+docker run -it -p 5000:5000 -e PORT=5000 -e ELECTRS_URL=https://blockstream.info/liquid/api -e CONCURRENCY=10 -t electrs-batch-server
+```
+
 
 ### License
 
